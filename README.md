@@ -58,3 +58,9 @@ options:
 ```
 
 **Note:** If you get an error from apktool about `No resource identifier found for attribute 'preserveLegacyExternalStorage'`, run `java -jar lib/apktool-2.8.1.jar empty-framework-dir`.
+
+## Patches Applied _by smsanagustin_
+- **Reading time tracker** - this timer starts when you open a book in the reading view
+- **Toast message** - added a toast message to inform me when I have reached the 10-minute reading goal
+
+**Note:** all patches were only applied through _vibe-coding_ using a combination of various GPT and Claude models 
