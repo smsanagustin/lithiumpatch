@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 final class ReadingGoalsDb extends SQLiteOpenHelper {
     private static final String NAME = "reading_goals.db";
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     private static ReadingGoalsDb instance;
 
@@ -32,9 +32,14 @@ final class ReadingGoalsDb extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE days (day TEXT PRIMARY KEY, read_ms INTEGER NOT NULL DEFAULT 0, goal_met INTEGER NOT NULL DEFAULT 0)");
         // title/creator are kept in case the book is later removed from the library
         db.execSQL("CREATE TABLE finished (book_id INTEGER PRIMARY KEY, finished_date INTEGER NOT NULL, title TEXT, creator TEXT)");
+        onUpgrade(db, 1, VERSION);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 2) {
+            // last seen progress of each book, to detect when it crosses the finished threshold
+            db.execSQL("CREATE TABLE progress (book_id INTEGER PRIMARY KEY, percent INTEGER NOT NULL)");
+        }
     }
 }

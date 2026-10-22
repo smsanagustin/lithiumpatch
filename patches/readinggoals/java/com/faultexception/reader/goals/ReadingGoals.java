@@ -1,14 +1,20 @@
 package com.faultexception.reader.goals;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.time.LocalDate;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /** Reading goal settings and history. */
 public final class ReadingGoals {
+    private static final String TAG = "ReadingGoals";
+
     public static final int DEFAULT_DAILY_MINUTES = 15;
     public static final int DEFAULT_YEARLY_BOOKS = 3;
 
@@ -17,10 +23,24 @@ public final class ReadingGoals {
     private static final String KEY_YEARLY_BOOKS = "yearly_books";
     private static final String KEY_NOTIFIED_DAY = "notified_day";
 
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     private ReadingGoals() {
     }
 
-    private static SharedPreferences prefs(Context context) {
+    /** Called when the library is shown. */
+    public static void onLibraryResume(Activity activity) {
+        Context context = activity.getApplicationContext();
+        executor.execute(() -> {
+            try {
+                FinishedBooks.scan(context);
+            } catch (Exception ex) {
+                Log.e(TAG, "failed to scan for finished books", ex);
+            }
+        });
+    }
+
+    static SharedPreferences prefs(Context context) {
         return context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 

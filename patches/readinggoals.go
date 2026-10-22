@@ -78,5 +78,17 @@ func init() {
 		),
 	)
 
+	inst = append(inst,
+		// check for finished books when returning to the library
+		PatchFile("smali/com/faultexception/reader/MainActivity.smali",
+			InMethod("onResume()V",
+				ReplaceStringAppend(
+					"\n"+`    invoke-super {p0}, Lcom/faultexception/reader/BaseActivity;->onResume()V`+"\n",
+					"\n"+`    invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoals;->onLibraryResume(Landroid/app/Activity;)V`+"\n",
+				),
+			),
+		),
+	)
+
 	Register("readinggoals", inst...)
 }

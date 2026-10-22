@@ -6,7 +6,7 @@
 # static fields
 .field private static final NAME:Ljava/lang/String; = "reading_goals.db"
 
-.field private static final VERSION:I = 0x1
+.field private static final VERSION:I = 0x2
 
 .field private static instance:Lcom/faultexception/reader/goals/ReadingGoalsDb;
 
@@ -17,7 +17,7 @@
 
     const/4 v0, 0x0
 
-    const/4 v1, 0x1
+    const/4 v1, 0x2
 
     const-string v2, "reading_goals.db"
 
@@ -76,7 +76,7 @@
 
 # virtual methods
 .method public onCreate(Landroid/database/sqlite/SQLiteDatabase;)V
-    .locals 1
+    .locals 2
 
     const-string v0, "CREATE TABLE days (day TEXT PRIMARY KEY, read_ms INTEGER NOT NULL DEFAULT 0, goal_met INTEGER NOT NULL DEFAULT 0)"
 
@@ -88,11 +88,28 @@
     .line 34
     invoke-virtual {p1, v0}, Landroid/database/sqlite/SQLiteDatabase;->execSQL(Ljava/lang/String;)V
 
+    const/4 v0, 0x1
+
+    const/4 v1, 0x2
+
+    .line 35
+    invoke-virtual {p0, p1, v0, v1}, Lcom/faultexception/reader/goals/ReadingGoalsDb;->onUpgrade(Landroid/database/sqlite/SQLiteDatabase;II)V
+
     return-void
 .end method
 
 .method public onUpgrade(Landroid/database/sqlite/SQLiteDatabase;II)V
     .locals 0
 
+    const/4 p3, 0x2
+
+    if-ge p2, p3, :cond_0
+
+    const-string p2, "CREATE TABLE progress (book_id INTEGER PRIMARY KEY, percent INTEGER NOT NULL)"
+
+    .line 42
+    invoke-virtual {p1, p2}, Landroid/database/sqlite/SQLiteDatabase;->execSQL(Ljava/lang/String;)V
+
+    :cond_0
     return-void
 .end method

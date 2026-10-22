@@ -294,6 +294,10 @@ func verify(generated, stubs, orig string) error {
 	if err != nil {
 		return err
 	}
+	framework, err := jarClasses(*AndroidJar)
+	if err != nil {
+		return fmt.Errorf("read android.jar: %w", err)
+	}
 	var classes = map[string]*smaliClass{}
 	for _, d := range []string{"smali", "smali_classes2"} {
 		cs, err := parseClasses(filepath.Join(orig, d))
@@ -333,7 +337,7 @@ func verify(generated, stubs, orig string) error {
 			}
 			c, ok := classes[cls]
 			if !ok {
-				if !strings.HasPrefix(cls, "Landroid/") && !strings.HasPrefix(cls, "Ljava/") {
+				if !framework[cls] {
 					errs = append(errs, fmt.Sprintf("%s:%d: class %s not found in apk", file, i+1, cls))
 				}
 				continue
@@ -352,4 +356,21 @@ func verify(generated, stubs, orig string) error {
 		return fmt.Errorf("unresolved references:\n\t%s", strings.Join(errs, "\n\t"))
 	}
 	return nil
+}
+
+// jarClasses returns the type descriptors of the classes in a jar.
+func jarClasses(name string) (map[string]bool, error) {
+	zr, err := zip.OpenReader(name)
+	if err != nil {
+		return nil, err
+	}
+	defer zr.Close()
+
+	classes := map[string]bool{}
+	for _, f := range zr.File {
+		if c, ok := strings.CutSuffix(f.Name, ".class"); ok {
+			classes["L"+c+";"] = true
+		}
+	}
+	return classes, nil
 }
