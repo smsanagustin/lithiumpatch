@@ -161,16 +161,19 @@
 
     invoke-static {v0, v1}, Lcom/faultexception/reader/goals/ReadingGoals;->markNotified(Landroid/content/Context;Ljava/time/LocalDate;)Z
 
-    move-result v0
+    move-result v1
 
-    if-eqz v0, :cond_3
+    if-eqz v1, :cond_3
 
-    const-string v0, "ReadingGoals"
+    const-string v1, "ReadingGoals"
 
-    const-string v1, "daily goal reached"
+    const-string v2, "daily goal reached"
 
     .line 97
-    invoke-static {v0, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+    invoke-static {v1, v2}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
+
+    .line 98
+    invoke-static {v0}, Lcom/faultexception/reader/goals/GoalReachedToast;->show(Landroid/app/Activity;)V
 
     :cond_3
     :goto_1
@@ -180,12 +183,12 @@
 .method private static msSinceMidnight()J
     .locals 5
 
-    .line 102
+    .line 103
     invoke-static {}, Ljava/time/ZonedDateTime;->now()Ljava/time/ZonedDateTime;
 
     move-result-object v0
 
-    .line 103
+    .line 104
     invoke-virtual {v0}, Ljava/time/ZonedDateTime;->toInstant()Ljava/time/Instant;
 
     move-result-object v1
@@ -222,12 +225,12 @@
 .method private static msUntilMidnight()J
     .locals 5
 
-    .line 107
+    .line 108
     invoke-static {}, Ljava/time/ZonedDateTime;->now()Ljava/time/ZonedDateTime;
 
     move-result-object v0
 
-    .line 108
+    .line 109
     invoke-virtual {v0}, Ljava/time/ZonedDateTime;->toLocalDate()Ljava/time/LocalDate;
 
     move-result-object v1

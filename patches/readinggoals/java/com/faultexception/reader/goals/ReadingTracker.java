@@ -95,6 +95,7 @@ public final class ReadingTracker {
         }
         if (ReadingGoals.addReadMs(activity, today, elapsed) && ReadingGoals.markNotified(activity, today)) {
             Log.d(TAG, "daily goal reached");
+            GoalReachedToast.show(activity);
         }
     }
 
