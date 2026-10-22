@@ -25,7 +25,7 @@
 .method static constructor <clinit>()V
     .locals 1
 
-    .line 26
+    .line 30
     invoke-static {}, Ljava/util/concurrent/Executors;->newSingleThreadExecutor()Ljava/util/concurrent/ExecutorService;
 
     move-result-object v0
@@ -38,7 +38,7 @@
 .method private constructor <init>()V
     .locals 0
 
-    .line 28
+    .line 32
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -57,13 +57,13 @@
 
     return p0
 
-    .line 100
+    .line 109
     :cond_0
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoalsDb;->get(Landroid/content/Context;)Landroid/database/sqlite/SQLiteDatabase;
 
     move-result-object v0
 
-    .line 101
+    .line 110
     invoke-virtual {p1}, Ljava/time/LocalDate;->toString()Ljava/lang/String;
 
     move-result-object v1
@@ -76,7 +76,7 @@
 
     invoke-virtual {v0, v2, v1}, Landroid/database/sqlite/SQLiteDatabase;->execSQL(Ljava/lang/String;[Ljava/lang/Object;)V
 
-    .line 102
+    .line 111
     invoke-static {p2, p3}, Ljava/lang/Long;->valueOf(J)Ljava/lang/Long;
 
     move-result-object p2
@@ -93,7 +93,7 @@
 
     invoke-virtual {v0, p3, p2}, Landroid/database/sqlite/SQLiteDatabase;->execSQL(Ljava/lang/String;[Ljava/lang/Object;)V
 
-    .line 103
+    .line 112
     invoke-static {p0, p1}, Lcom/faultexception/reader/goals/ReadingGoals;->updateGoalMet(Landroid/content/Context;Ljava/time/LocalDate;)Z
 
     move-result p0
@@ -101,10 +101,63 @@
     return p0
 .end method
 
+.method static getCurrentStreak(Ljava/util/Set;Ljava/time/LocalDate;)I
+    .locals 4
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "(",
+            "Ljava/util/Set<",
+            "Ljava/time/LocalDate;",
+            ">;",
+            "Ljava/time/LocalDate;",
+            ")I"
+        }
+    .end annotation
+
+    .line 144
+    invoke-interface {p0, p1}, Ljava/util/Set;->contains(Ljava/lang/Object;)Z
+
+    move-result v0
+
+    const-wide/16 v1, 0x1
+
+    if-eqz v0, :cond_0
+
+    goto :goto_0
+
+    :cond_0
+    invoke-virtual {p1, v1, v2}, Ljava/time/LocalDate;->minusDays(J)Ljava/time/LocalDate;
+
+    move-result-object p1
+
+    :goto_0
+    const/4 v0, 0x0
+
+    .line 146
+    :goto_1
+    invoke-interface {p0, p1}, Ljava/util/Set;->contains(Ljava/lang/Object;)Z
+
+    move-result v3
+
+    if-eqz v3, :cond_1
+
+    add-int/lit8 v0, v0, 0x1
+
+    .line 148
+    invoke-virtual {p1, v1, v2}, Ljava/time/LocalDate;->minusDays(J)Ljava/time/LocalDate;
+
+    move-result-object p1
+
+    goto :goto_1
+
+    :cond_1
+    return v0
+.end method
+
 .method public static getDailyGoalMinutes(Landroid/content/Context;)I
     .locals 2
 
-    .line 48
+    .line 57
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoals;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
     move-result-object p0
@@ -123,7 +176,7 @@
 .method public static getDailyGoalMs(Landroid/content/Context;)J
     .locals 4
 
-    .line 52
+    .line 61
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoals;->getDailyGoalMinutes(Landroid/content/Context;)I
 
     move-result p0
@@ -137,10 +190,99 @@
     return-wide v0
 .end method
 
+.method static getMetDays(Landroid/content/Context;)Ljava/util/TreeSet;
+    .locals 3
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "(",
+            "Landroid/content/Context;",
+            ")",
+            "Ljava/util/TreeSet<",
+            "Ljava/time/LocalDate;",
+            ">;"
+        }
+    .end annotation
+
+    .line 130
+    new-instance v0, Ljava/util/TreeSet;
+
+    invoke-direct {v0}, Ljava/util/TreeSet;-><init>()V
+
+    .line 131
+    invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoalsDb;->get(Landroid/content/Context;)Landroid/database/sqlite/SQLiteDatabase;
+
+    move-result-object p0
+
+    const-string v1, "SELECT day FROM days WHERE goal_met != 0"
+
+    const/4 v2, 0x0
+
+    invoke-virtual {p0, v1, v2}, Landroid/database/sqlite/SQLiteDatabase;->rawQuery(Ljava/lang/String;[Ljava/lang/String;)Landroid/database/Cursor;
+
+    move-result-object p0
+
+    .line 132
+    :goto_0
+    :try_start_0
+    invoke-interface {p0}, Landroid/database/Cursor;->moveToNext()Z
+
+    move-result v1
+
+    if-eqz v1, :cond_0
+
+    const/4 v1, 0x0
+
+    .line 133
+    invoke-interface {p0, v1}, Landroid/database/Cursor;->getString(I)Ljava/lang/String;
+
+    move-result-object v1
+
+    invoke-static {v1}, Ljava/time/LocalDate;->parse(Ljava/lang/CharSequence;)Ljava/time/LocalDate;
+
+    move-result-object v1
+
+    invoke-virtual {v0, v1}, Ljava/util/TreeSet;->add(Ljava/lang/Object;)Z
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    goto :goto_0
+
+    :cond_0
+    if-eqz p0, :cond_1
+
+    .line 135
+    invoke-interface {p0}, Landroid/database/Cursor;->close()V
+
+    :cond_1
+    return-object v0
+
+    :catchall_0
+    move-exception v0
+
+    if-eqz p0, :cond_2
+
+    .line 131
+    :try_start_1
+    invoke-interface {p0}, Landroid/database/Cursor;->close()V
+    :try_end_1
+    .catchall {:try_start_1 .. :try_end_1} :catchall_1
+
+    goto :goto_1
+
+    :catchall_1
+    move-exception p0
+
+    invoke-virtual {v0, p0}, Ljava/lang/Throwable;->addSuppressed(Ljava/lang/Throwable;)V
+
+    :cond_2
+    :goto_1
+    throw v0
+.end method
+
 .method public static getReadMs(Landroid/content/Context;Ljava/time/LocalDate;)J
     .locals 2
 
-    .line 81
+    .line 90
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoalsDb;->get(Landroid/content/Context;)Landroid/database/sqlite/SQLiteDatabase;
 
     move-result-object p0
@@ -159,7 +301,7 @@
 
     move-result-object p0
 
-    .line 82
+    .line 91
     :try_start_0
     invoke-interface {p0}, Landroid/database/Cursor;->moveToFirst()Z
 
@@ -183,7 +325,7 @@
     :goto_0
     if-eqz p0, :cond_1
 
-    .line 83
+    .line 92
     invoke-interface {p0}, Landroid/database/Cursor;->close()V
 
     :cond_1
@@ -194,7 +336,7 @@
 
     if-eqz p0, :cond_2
 
-    .line 81
+    .line 90
     :try_start_1
     invoke-interface {p0}, Landroid/database/Cursor;->close()V
     :try_end_1
@@ -212,10 +354,85 @@
     throw p1
 .end method
 
+.method static getRecordStreak(Ljava/util/TreeSet;)I
+    .locals 7
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "(",
+            "Ljava/util/TreeSet<",
+            "Ljava/time/LocalDate;",
+            ">;)I"
+        }
+    .end annotation
+
+    .line 157
+    invoke-virtual {p0}, Ljava/util/TreeSet;->iterator()Ljava/util/Iterator;
+
+    move-result-object p0
+
+    const/4 v0, 0x0
+
+    const/4 v1, 0x0
+
+    move-object v2, v1
+
+    move v1, v0
+
+    :goto_0
+    invoke-interface {p0}, Ljava/util/Iterator;->hasNext()Z
+
+    move-result v3
+
+    if-eqz v3, :cond_1
+
+    invoke-interface {p0}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+
+    move-result-object v3
+
+    check-cast v3, Ljava/time/LocalDate;
+
+    const/4 v4, 0x1
+
+    if-eqz v2, :cond_0
+
+    const-wide/16 v5, 0x1
+
+    .line 158
+    invoke-virtual {v2, v5, v6}, Ljava/time/LocalDate;->plusDays(J)Ljava/time/LocalDate;
+
+    move-result-object v2
+
+    invoke-virtual {v2, v3}, Ljava/time/LocalDate;->equals(Ljava/lang/Object;)Z
+
+    move-result v2
+
+    if-eqz v2, :cond_0
+
+    add-int/2addr v1, v4
+
+    goto :goto_1
+
+    :cond_0
+    move v1, v4
+
+    .line 159
+    :goto_1
+    invoke-static {v0, v1}, Ljava/lang/Math;->max(II)I
+
+    move-result v0
+
+    move-object v2, v3
+
+    goto :goto_0
+
+    :cond_1
+    return v0
+.end method
+
 .method public static getYearlyGoalBooks(Landroid/content/Context;)I
     .locals 2
 
-    .line 73
+    .line 82
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoals;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
     move-result-object p0
@@ -234,7 +451,7 @@
 .method public static isGoalMet(Landroid/content/Context;Ljava/time/LocalDate;)Z
     .locals 1
 
-    .line 87
+    .line 96
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoalsDb;->get(Landroid/content/Context;)Landroid/database/sqlite/SQLiteDatabase;
 
     move-result-object p0
@@ -253,7 +470,7 @@
 
     move-result-object p0
 
-    .line 88
+    .line 97
     :try_start_0
     invoke-interface {p0}, Landroid/database/Cursor;->moveToFirst()Z
 
@@ -276,7 +493,7 @@
     :cond_0
     if-eqz p0, :cond_1
 
-    .line 89
+    .line 98
     invoke-interface {p0}, Landroid/database/Cursor;->close()V
 
     :cond_1
@@ -287,7 +504,7 @@
 
     if-eqz p0, :cond_2
 
-    .line 87
+    .line 96
     :try_start_1
     invoke-interface {p0}, Landroid/database/Cursor;->close()V
     :try_end_1
@@ -308,7 +525,7 @@
 .method static synthetic lambda$onLibraryResume$0(Landroid/content/Context;)V
     .locals 2
 
-    .line 36
+    .line 44
     :try_start_0
     invoke-static {p0}, Lcom/faultexception/reader/goals/FinishedBooks;->scan(Landroid/content/Context;)V
     :try_end_0
@@ -323,22 +540,37 @@
 
     const-string v1, "failed to scan for finished books"
 
-    .line 38
+    .line 46
     invoke-static {v0, v1, p0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
+    .line 48
     :goto_0
+    new-instance p0, Landroid/os/Handler;
+
+    invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
+
+    move-result-object v0
+
+    invoke-direct {p0, v0}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
+
+    new-instance v0, Lcom/faultexception/reader/goals/ReadingGoals$$ExternalSyntheticLambda1;
+
+    invoke-direct {v0}, Lcom/faultexception/reader/goals/ReadingGoals$$ExternalSyntheticLambda1;-><init>()V
+
+    invoke-virtual {p0, v0}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
+
     return-void
 .end method
 
 .method static markNotified(Landroid/content/Context;Ljava/time/LocalDate;)Z
     .locals 3
 
-    .line 121
+    .line 167
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoals;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
     move-result-object p0
 
-    .line 122
+    .line 168
     invoke-virtual {p1}, Ljava/time/LocalDate;->toString()Ljava/lang/String;
 
     move-result-object v0
@@ -361,7 +593,7 @@
 
     return p0
 
-    .line 125
+    .line 171
     :cond_0
     invoke-interface {p0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
 
@@ -385,12 +617,15 @@
 .method public static onLibraryResume(Landroid/app/Activity;)V
     .locals 2
 
-    .line 33
+    .line 40
     invoke-virtual {p0}, Landroid/app/Activity;->getApplicationContext()Landroid/content/Context;
 
     move-result-object p0
 
-    .line 34
+    .line 41
+    invoke-static {}, Lcom/faultexception/reader/goals/Dashboard;->refreshAll()V
+
+    .line 42
     sget-object v0, Lcom/faultexception/reader/goals/ReadingGoals;->executor:Ljava/util/concurrent/ExecutorService;
 
     new-instance v1, Lcom/faultexception/reader/goals/ReadingGoals$$ExternalSyntheticLambda0;
@@ -405,7 +640,7 @@
 .method static prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
     .locals 2
 
-    .line 44
+    .line 53
     invoke-virtual {p0}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
 
     move-result-object p0
@@ -424,17 +659,17 @@
 .method public static setDailyGoalMinutes(Landroid/content/Context;I)V
     .locals 4
 
-    .line 62
+    .line 71
     invoke-static {}, Ljava/time/LocalDate;->now()Ljava/time/LocalDate;
 
     move-result-object v0
 
-    .line 63
+    .line 72
     invoke-static {p0, v0}, Lcom/faultexception/reader/goals/ReadingGoals;->isGoalMet(Landroid/content/Context;Ljava/time/LocalDate;)Z
 
     move-result v1
 
-    .line 64
+    .line 73
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoals;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
     move-result-object v2
@@ -451,14 +686,14 @@
 
     invoke-interface {p1}, Landroid/content/SharedPreferences$Editor;->apply()V
 
-    .line 65
+    .line 74
     invoke-static {p0, v0}, Lcom/faultexception/reader/goals/ReadingGoals;->updateGoalMet(Landroid/content/Context;Ljava/time/LocalDate;)Z
 
     move-result p1
 
     if-eqz p1, :cond_0
 
-    .line 66
+    .line 75
     invoke-static {p0, v0}, Lcom/faultexception/reader/goals/ReadingGoals;->markNotified(Landroid/content/Context;Ljava/time/LocalDate;)Z
 
     goto :goto_0
@@ -466,14 +701,14 @@
     :cond_0
     if-eqz v1, :cond_1
 
-    .line 67
+    .line 76
     invoke-static {p0, v0}, Lcom/faultexception/reader/goals/ReadingGoals;->isGoalMet(Landroid/content/Context;Ljava/time/LocalDate;)Z
 
     move-result p1
 
     if-nez p1, :cond_1
 
-    .line 68
+    .line 77
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoals;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
     move-result-object p0
@@ -498,7 +733,7 @@
 .method public static setYearlyGoalBooks(Landroid/content/Context;I)V
     .locals 1
 
-    .line 77
+    .line 86
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoals;->prefs(Landroid/content/Context;)Landroid/content/SharedPreferences;
 
     move-result-object p0
@@ -521,12 +756,12 @@
 .method private static updateGoalMet(Landroid/content/Context;Ljava/time/LocalDate;)Z
     .locals 6
 
-    .line 111
+    .line 120
     invoke-static {p0, p1}, Lcom/faultexception/reader/goals/ReadingGoals;->isGoalMet(Landroid/content/Context;Ljava/time/LocalDate;)Z
 
     move-result v0
 
-    .line 112
+    .line 121
     invoke-static {p0, p1}, Lcom/faultexception/reader/goals/ReadingGoals;->getReadMs(Landroid/content/Context;Ljava/time/LocalDate;)J
 
     move-result-wide v1
@@ -553,7 +788,7 @@
     :goto_0
     if-eq v1, v0, :cond_1
 
-    .line 114
+    .line 123
     invoke-static {p0}, Lcom/faultexception/reader/goals/ReadingGoalsDb;->get(Landroid/content/Context;)Landroid/database/sqlite/SQLiteDatabase;
 
     move-result-object p0

@@ -5,9 +5,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import java.time.LocalDate;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -28,15 +32,20 @@ public final class ReadingGoals {
     private ReadingGoals() {
     }
 
-    /** Called when the library is shown. */
+    /**
+     * Called when the library is shown. Checks for finished books in the
+     * background, then updates the dashboard.
+     */
     public static void onLibraryResume(Activity activity) {
         Context context = activity.getApplicationContext();
+        Dashboard.refreshAll();
         executor.execute(() -> {
             try {
                 FinishedBooks.scan(context);
             } catch (Exception ex) {
                 Log.e(TAG, "failed to scan for finished books", ex);
             }
+            new Handler(Looper.getMainLooper()).post(Dashboard::refreshAll);
         });
     }
 
@@ -114,6 +123,43 @@ public final class ReadingGoals {
             ReadingGoalsDb.get(context).execSQL("UPDATE days SET goal_met = ? WHERE day = ?", new Object[]{met ? 1 : 0, day.toString()});
         }
         return met && !wasMet;
+    }
+
+    /** Returns the days the goal was met, in ascending order. */
+    static TreeSet<LocalDate> getMetDays(Context context) {
+        TreeSet<LocalDate> days = new TreeSet<>();
+        try (Cursor c = ReadingGoalsDb.get(context).rawQuery("SELECT day FROM days WHERE goal_met != 0", null)) {
+            while (c.moveToNext()) {
+                days.add(LocalDate.parse(c.getString(0)));
+            }
+        }
+        return days;
+    }
+
+    /**
+     * Returns the number of consecutive days up to today that the goal was
+     * met. Today doesn't break the streak until it's over.
+     */
+    static int getCurrentStreak(Set<LocalDate> metDays, LocalDate today) {
+        LocalDate day = metDays.contains(today) ? today : today.minusDays(1);
+        int streak = 0;
+        while (metDays.contains(day)) {
+            streak++;
+            day = day.minusDays(1);
+        }
+        return streak;
+    }
+
+    /** Returns the longest run of consecutive days the goal was met. */
+    static int getRecordStreak(TreeSet<LocalDate> metDays) {
+        int record = 0, run = 0;
+        LocalDate last = null;
+        for (LocalDate day : metDays) {
+            run = last != null && last.plusDays(1).equals(day) ? run + 1 : 1;
+            record = Math.max(record, run);
+            last = day;
+        }
+        return record;
     }
 
     /** Returns false if the goal-reached toast was already shown for the day. */

@@ -28,6 +28,7 @@ Adds additional functionality to the Lithium EPUB Reader Android app.
 - Full-bleed background in fullscreen mode on devices with a notch.
 - Option to disable page turn animations (e.g., for e-ink screens).
 - Option to invert the color of images or the entire page.
+- Reading goals (daily reading time, reading streaks, and books finished per year) above the library.
 
 ## Usage
 
@@ -57,5 +58,7 @@ options:
   -q, --quiet                        Do not show the diff
       --help                         Show this help text
 ```
+
+The reading goals patch is written in Java (`patches/readinggoals/java`) and compiled to smali which is checked in. After changing it, regenerate the smali with `ANDROID_JAR=path/to/android.jar D8_JAR=path/to/d8.jar go generate ./patches` (requires a JDK, an Android platform `android.jar`, and `d8.jar` from the Android build tools).
 
 **Note:** If you get an error from apktool about `No resource identifier found for attribute 'preserveLegacyExternalStorage'`, run `java -jar lib/apktool-3.0.3.jar clean-frameworks`.

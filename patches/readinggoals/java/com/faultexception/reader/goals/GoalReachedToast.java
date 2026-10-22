@@ -37,7 +37,7 @@ final class GoalReachedToast {
 
         View toast = create(activity);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
-        int margin = dp(activity, 16);
+        int margin = Ui.dp(activity, 16);
         int inset = 0;
         WindowInsets insets = decor.getRootWindowInsets();
         if (insets != null) {
@@ -47,7 +47,7 @@ final class GoalReachedToast {
         decor.addView(toast, lp);
 
         toast.setAlpha(0);
-        toast.setTranslationY(dp(activity, 32));
+        toast.setTranslationY(Ui.dp(activity, 32));
         toast.animate().alpha(1).translationY(0).setDuration(ANIMATION_MS);
         toast.postDelayed(() -> dismiss(toast), DURATION_MS);
     }
@@ -57,7 +57,7 @@ final class GoalReachedToast {
             return;
         }
         toast.setTag(Boolean.TRUE); // dismissing
-        toast.animate().alpha(0).translationY(dp(toast.getContext(), 32)).setDuration(ANIMATION_MS).withEndAction(() -> {
+        toast.animate().alpha(0).translationY(Ui.dp(toast.getContext(), 32)).setDuration(ANIMATION_MS).withEndAction(() -> {
             if (toast.getParent() != null) {
                 ((ViewGroup) toast.getParent()).removeView(toast);
             }
@@ -68,36 +68,36 @@ final class GoalReachedToast {
         LinearLayout card = new LinearLayout(context);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
-        card.setPadding(dp(context, 16), dp(context, 14), dp(context, 8), dp(context, 14));
-        card.setElevation(dp(context, 6));
+        card.setPadding(Ui.dp(context, 16), Ui.dp(context, 14), Ui.dp(context, 8), Ui.dp(context, 14));
+        card.setElevation(Ui.dp(context, 6));
         GradientDrawable bg = new GradientDrawable();
         bg.setColor(0xFF323232);
-        bg.setCornerRadius(dp(context, 8));
+        bg.setCornerRadius(Ui.dp(context, 8));
         card.setBackground(bg);
         card.setClickable(true); // don't pass taps through to the reader
 
         ImageView check = new ImageView(context);
         GradientDrawable circle = new GradientDrawable();
         circle.setShape(GradientDrawable.OVAL);
-        circle.setColor(themeColor(context, R.attr.colorPrimary, 0xFF1976D2));
+        circle.setColor(Ui.primary(context));
         check.setBackground(circle);
         check.setImageResource(R.drawable.goals_ic_check);
-        check.setImageTintList(ColorStateList.valueOf(themeColor(context, R.attr.colorOnPrimary, Color.WHITE)));
-        check.setPadding(dp(context, 6), dp(context, 6), dp(context, 6), dp(context, 6));
-        card.addView(check, new LinearLayout.LayoutParams(dp(context, 32), dp(context, 32)));
+        check.setImageTintList(ColorStateList.valueOf(Ui.onPrimary(context)));
+        check.setPadding(Ui.dp(context, 6), Ui.dp(context, 6), Ui.dp(context, 6), Ui.dp(context, 6));
+        card.addView(check, new LinearLayout.LayoutParams(Ui.dp(context, 32), Ui.dp(context, 32)));
 
         LinearLayout text = new LinearLayout(context);
         text.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams textLp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1);
-        textLp.setMarginStart(dp(context, 16));
-        textLp.setMarginEnd(dp(context, 8));
+        textLp.setMarginStart(Ui.dp(context, 16));
+        textLp.setMarginEnd(Ui.dp(context, 8));
         card.addView(text, textLp);
 
         TextView title = new TextView(context);
         title.setText("Today's reading goal achieved");
         title.setTextColor(Color.WHITE);
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        title.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        title.setTypeface(Ui.MEDIUM);
         text.addView(title);
 
         TextView message = new TextView(context);
@@ -109,31 +109,11 @@ final class GoalReachedToast {
         ImageButton close = new ImageButton(context);
         close.setImageResource(R.drawable.goals_ic_close);
         close.setImageTintList(ColorStateList.valueOf(0xB3FFFFFF));
-        close.setBackgroundResource(themeResource(context, android.R.attr.selectableItemBackgroundBorderless));
+        close.setBackgroundResource(Ui.themeResource(context, android.R.attr.selectableItemBackgroundBorderless));
         close.setContentDescription("Dismiss");
         close.setOnClickListener(v -> dismiss(card));
-        card.addView(close, new LinearLayout.LayoutParams(dp(context, 40), dp(context, 40)));
+        card.addView(close, new LinearLayout.LayoutParams(Ui.dp(context, 40), Ui.dp(context, 40)));
 
         return card;
-    }
-
-    static int dp(Context context, float dp) {
-        return Math.round(dp * context.getResources().getDisplayMetrics().density);
-    }
-
-    static int themeColor(Context context, int attr, int fallback) {
-        TypedValue tv = new TypedValue();
-        if (!context.getTheme().resolveAttribute(attr, tv, true)) {
-            return fallback;
-        }
-        if (tv.type >= TypedValue.TYPE_FIRST_COLOR_INT && tv.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-            return tv.data;
-        }
-        return tv.resourceId != 0 ? context.getColor(tv.resourceId) : fallback;
-    }
-
-    static int themeResource(Context context, int attr) {
-        TypedValue tv = new TypedValue();
-        return context.getTheme().resolveAttribute(attr, tv, true) ? tv.resourceId : 0;
     }
 }
